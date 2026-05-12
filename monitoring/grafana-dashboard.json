@@ -1,0 +1,40 @@
+{
+  "title": "LegalDocs AI API Overview",
+  "schemaVersion": 39,
+  "version": 1,
+  "refresh": "15s",
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "API Request Rate",
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "sum(rate(legaldocs_api_requests_total[5m])) by (path)",
+          "legendFormat": "{{path}}"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "P95 Latency",
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(legaldocs_api_request_latency_seconds_bucket[5m])) by (le, path))",
+          "legendFormat": "{{path}}"
+        }
+      ]
+    },
+    {
+      "type": "stat",
+      "title": "5xx Errors",
+      "gridPos": { "x": 0, "y": 8, "w": 8, "h": 5 },
+      "targets": [
+        {
+          "expr": "sum(rate(legaldocs_api_requests_total{status=~\"5..\"}[5m]))"
+        }
+      ]
+    }
+  ]
+}
