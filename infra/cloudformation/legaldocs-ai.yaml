@@ -1,0 +1,95 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: Placeholder production architecture for LegalDocs AI.
+
+Parameters:
+  Environment:
+    Type: String
+    Default: demo
+    AllowedValues: [demo, staging, prod]
+
+Resources:
+  ContractBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+
+  AppKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for LegalDocs AI document encryption
+      EnableKeyRotation: true
+
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    Properties:
+      UserPoolName: !Sub legaldocs-${Environment}-users
+      AutoVerifiedAttributes: [email]
+
+  DocumentQueue:
+    Type: AWS::SQS::Queue
+    Properties:
+      VisibilityTimeout: 300
+
+  IngestionFunction:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Sub legaldocs-${Environment}-ingestion
+      Runtime: python3.12
+      Handler: index.handler
+      Role: !GetAtt LambdaRole.Arn
+      Code:
+        ZipFile: |
+          def handler(event, context):
+              return {"statusCode": 202, "body": "ingestion accepted"}
+
+  Workflow:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      RoleArn: !GetAtt StepFunctionRole.Arn
+      DefinitionString: |
+        {
+          "StartAt": "ExtractText",
+          "States": {
+            "ExtractText": { "Type": "Pass", "Next": "EmbedChunks" },
+            "EmbedChunks": { "Type": "Pass", "Next": "AnalyzeContract" },
+            "AnalyzeContract": { "Type": "Pass", "End": true }
+          }
+        }
+
+  EcsCluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub legaldocs-${Environment}
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+
+  StepFunctionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: states.amazonaws.com
+            Action: sts:AssumeRole
+
+Outputs:
+  ContractBucketName:
+    Value: !Ref ContractBucket
+  UserPoolId:
+    Value: !Ref UserPool
