@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: legaldocs-web
+  namespace: legaldocs-ai
+spec:
+  selector:
+    app: legaldocs-web
+  ports:
+    - name: http
+      port: 80
+      targetPort: 80
