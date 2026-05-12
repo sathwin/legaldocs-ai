@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: legaldocs-config
+  namespace: legaldocs-ai
+data:
+  LEGALDOCS_DEMO_MODE: "true"
+  LEGALDOCS_LLM_PROVIDER: "mock"
+  LEGALDOCS_CORS_ORIGINS: "http://localhost:5173,http://localhost:3000,https://your-vercel-app.vercel.app"
+  REDIS_URL: "redis://redis:6379/0"
+  VECTOR_STORE_URL: "http://vector-store:8001"
