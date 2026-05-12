@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: legaldocs-api
+    runtime: docker
+    rootDir: backend
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: LEGALDOCS_DEMO_MODE
+        value: "true"
+      - key: LEGALDOCS_LLM_PROVIDER
+        value: mock
+      - key: LEGALDOCS_CORS_ORIGINS
+        value: https://your-vercel-app.vercel.app,http://localhost:5173,http://localhost:3000
