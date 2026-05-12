@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: S3 and KMS storage scaffold for LegalDocs AI.
+
+Resources:
+  AppKey:
+    Type: AWS::KMS::Key
+    Properties:
+      Description: KMS key for contract encryption
+      EnableKeyRotation: true
+
+  ContractBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketEncryption:
+        ServerSideEncryptionConfiguration:
+          - ServerSideEncryptionByDefault:
+              SSEAlgorithm: aws:kms
+              KMSMasterKeyID: !Ref AppKey
+      VersioningConfiguration:
+        Status: Enabled
+
+Outputs:
+  BucketName:
+    Value: !Ref ContractBucket
+  KmsKeyId:
+    Value: !Ref AppKey
