@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: legaldocs-worker
+  namespace: legaldocs-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: legaldocs-worker
+  template:
+    metadata:
+      labels:
+        app: legaldocs-worker
+    spec:
+      containers:
+        - name: worker
+          image: ghcr.io/example/legaldocs-worker:latest
+          env:
+            - name: REDIS_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: legaldocs-config
+                  key: REDIS_URL
+            - name: VECTOR_STORE_URL
+              valueFrom:
+                configMapKeyRef:
+                  name: legaldocs-config
+                  key: VECTOR_STORE_URL
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 512Mi
