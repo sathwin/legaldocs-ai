@@ -1,0 +1,61 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: legaldocs-api
+  namespace: legaldocs-ai
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: legaldocs-api
+  template:
+    metadata:
+      labels:
+        app: legaldocs-api
+    spec:
+      containers:
+        - name: api
+          image: ghcr.io/example/legaldocs-api:latest
+          ports:
+            - containerPort: 8000
+          env:
+            - name: LEGALDOCS_DEMO_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: legaldocs-config
+                  key: LEGALDOCS_DEMO_MODE
+            - name: LEGALDOCS_LLM_PROVIDER
+              valueFrom:
+                configMapKeyRef:
+                  name: legaldocs-config
+                  key: LEGALDOCS_LLM_PROVIDER
+            - name: LEGALDOCS_CORS_ORIGINS
+              valueFrom:
+                configMapKeyRef:
+                  name: legaldocs-config
+                  key: LEGALDOCS_CORS_ORIGINS
+            - name: LEGALDOCS_LLM_API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: legaldocs-secrets
+                  key: LEGALDOCS_LLM_API_KEY
+                  optional: true
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 750m
+              memory: 512Mi
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 20
