@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: vector-store
+  namespace: legaldocs-ai
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: vector-store
+  template:
+    metadata:
+      labels:
+        app: vector-store
+    spec:
+      containers:
+        - name: chroma-placeholder
+          image: chromadb/chroma:0.5.23
+          ports:
+            - containerPort: 8000
+          resources:
+            requests:
+              cpu: 100m
+              memory: 256Mi
+            limits:
+              cpu: 1
+              memory: 1Gi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: vector-store
+  namespace: legaldocs-ai
+spec:
+  selector:
+    app: vector-store
+  ports:
+    - port: 8001
+      targetPort: 8000
