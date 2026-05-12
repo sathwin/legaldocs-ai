@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: legaldocs-ingress
+  namespace: legaldocs-ai
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-body-size: "25m"
+spec:
+  rules:
+    - host: legaldocs-ai.example.com
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: legaldocs-api
+                port:
+                  number: 8000
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: legaldocs-web
+                port:
+                  number: 80
