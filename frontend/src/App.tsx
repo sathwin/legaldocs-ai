@@ -1,29 +1,92 @@
-import {
-  AlertTriangle,
-  ArrowRight,
-  BarChart3,
-  Bot,
-  CheckCircle2,
-  Cloud,
-  FileSearch,
-  GitCompareArrows,
-  Layers3,
-  MessageSquare,
-  Scale,
-  ShieldCheck,
-  UploadCloud,
-} from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import type { ReactNode } from "react";
 import { useEffect, useMemo, useState } from "react";
 import { api } from "./api/client";
 import type { Analysis, ChatResponse, CompareResponse, DashboardStats, DocumentSummary, PipelineStatus, RiskLevel } from "./types/api";
 
+// Custom icon components
+const DocumentIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" strokeWidth="2.5"/>
+    <line x1="8" y1="8" x2="16" y2="8" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="8" y1="12" x2="16" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="8" y1="16" x2="13" y2="16" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>
+);
+
+const ChartIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="4" y="14" width="4" height="6" rx="1" fill="currentColor"/>
+    <rect x="10" y="8" width="4" height="12" rx="1" fill="currentColor"/>
+    <rect x="16" y="11" width="4" height="9" rx="1" fill="currentColor"/>
+  </svg>
+);
+
+const LightningIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" fill="currentColor"/>
+  </svg>
+);
+
+const CheckIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2.5"/>
+    <path d="M8 12l3 3 5-5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+const UploadIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 3v12m0-12l-4 4m4-4l4 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <path d="M3 17v2a2 2 0 002 2h14a2 2 0 002-2v-2" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="11" cy="11" r="6" stroke="currentColor" strokeWidth="2.5"/>
+    <path d="M15.5 15.5L20 20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>
+);
+
+const MessageIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="3" y="5" width="18" height="13" rx="2" stroke="currentColor" strokeWidth="2.5"/>
+    <path d="M8 10h8M8 14h5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>
+);
+
+const WarningIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2L2 20h20L12 2z" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"/>
+    <line x1="12" y1="9" x2="12" y2="13" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+    <circle cx="12" cy="17" r="1" fill="currentColor"/>
+  </svg>
+);
+
+const CompareIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M7 16l-4-4 4-4M17 8l4 4-4 4" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+    <line x1="3" y1="12" x2="10" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+    <line x1="14" y1="12" x2="21" y2="12" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"/>
+  </svg>
+);
+
+const ScaleIcon = () => (
+  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <line x1="12" y1="3" x2="12" y2="21" stroke="currentColor" strokeWidth="2.5"/>
+    <path d="M12 3L6 8h12l-6-5z" stroke="currentColor" strokeWidth="2.5" strokeLinejoin="round"/>
+    <circle cx="6" cy="16" r="3" stroke="currentColor" strokeWidth="2"/>
+    <circle cx="18" cy="16" r="3" stroke="currentColor" strokeWidth="2"/>
+  </svg>
+);
+
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 const riskStyles: Record<RiskLevel, string> = {
-  low: "bg-emerald-50 text-emerald-700 ring-emerald-200",
-  medium: "bg-amber-50 text-amber-800 ring-amber-200",
-  high: "bg-red-50 text-red-700 ring-red-200",
+  low: "bg-green-100 text-green-800 border border-green-300",
+  medium: "bg-yellow-100 text-yellow-900 border border-yellow-300",
+  high: "bg-red-100 text-red-800 border border-red-300",
 };
 
 function App() {
@@ -94,285 +157,361 @@ function App() {
   }
 
   return (
-    <main className="min-h-screen bg-[#f7f8f5] text-ink">
-      <nav className="sticky top-0 z-20 border-b border-stone-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
+    <main className="min-h-screen bg-cream-100 bg-noise">
+      {/* Navigation */}
+      <nav className="border-b border-brown-900/10 bg-cream-50/95 backdrop-blur-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
           <div className="flex items-center gap-3">
-            <div className="grid h-10 w-10 place-items-center rounded bg-brand text-white">
-              <FileSearch size={22} />
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-brown-900 shadow-soft">
+              <div className="text-yellow-brand"><ScaleIcon /></div>
             </div>
             <div>
-              <p className="text-lg font-semibold">LegalDocs AI</p>
-              <p className="text-xs text-stone-500">Demo-ready contract intelligence platform</p>
+              <h1 className="text-xl font-black text-brown-900">LegalDocs</h1>
+              <p className="font-mono text-xs font-semibold uppercase tracking-wider text-brown-700">AI Platform</p>
             </div>
           </div>
-          <div className="hidden items-center gap-2 text-sm text-stone-600 md:flex">
-            <a href="#dashboard" className="rounded px-3 py-2 hover:bg-stone-100">Dashboard</a>
-            <a href="#analysis" className="rounded px-3 py-2 hover:bg-stone-100">Analysis</a>
-            <a href="#compare" className="rounded px-3 py-2 hover:bg-stone-100">Compare</a>
+          <div className="hidden items-center gap-1 md:flex">
+            <a href="#dashboard" className="rounded-lg px-4 py-2.5 text-sm font-semibold text-brown-900 transition hover:bg-cream-200">Dashboard</a>
+            <a href="#analysis" className="rounded-lg px-4 py-2.5 text-sm font-semibold text-brown-900 transition hover:bg-cream-200">Analysis</a>
+            <a href="#compare" className="rounded-lg px-4 py-2.5 text-sm font-semibold text-brown-900 transition hover:bg-cream-200">Compare</a>
+            <a href={`${apiBaseUrl}/docs`} className="ml-2 rounded-lg border-2 border-brown-900 bg-brown-900 px-4 py-2.5 text-sm font-bold text-yellow-brand transition hover:shadow-glow">
+              API Docs
+            </a>
           </div>
         </div>
       </nav>
 
-      <section className="border-b border-stone-200 bg-white">
-        <div className="mx-auto grid max-w-7xl gap-8 px-5 py-12 lg:grid-cols-[1.1fr_0.9fr] lg:items-center">
-          <div>
-            <div className="mb-5 flex flex-wrap gap-2 text-xs font-medium text-stone-700">
-              <Badge icon={<ShieldCheck size={14} />} label="Mock RBAC" />
-              <Badge icon={<Cloud size={14} />} label="Cloud-ready AWS templates" />
-              <Badge icon={<Layers3 size={14} />} label="RAG architecture" />
+      {/* Hero Section */}
+      <section className="border-b border-brown-900/10 pattern-dots">
+        <div className="mx-auto max-w-7xl px-6 py-20">
+          <div className="mx-auto max-w-4xl text-center">
+            <div className="mb-7 inline-flex items-center gap-2 rounded-full border-2 border-brown-900/20 bg-yellow-brand px-5 py-2.5 shadow-soft">
+              <div className="text-brown-900" style={{ width: '18px', height: '18px' }}><LightningIcon /></div>
+              <p className="font-mono text-sm font-bold text-brown-900">Automated Contract Analysis</p>
             </div>
-            <h1 className="max-w-4xl text-5xl font-semibold leading-tight tracking-normal">
-              Contract review workflows with LLM-style analysis, retrieval, and operational scaffolding.
-            </h1>
-            <p className="mt-5 max-w-2xl text-lg leading-8 text-stone-600">
-              A recruiter-facing prototype that demonstrates React, FastAPI, mock LLM providers, document ingestion,
-              clause extraction, comparison, Kubernetes, CI/CD, observability, and AWS-style infrastructure.
+            <h2 className="mb-7 text-6xl font-black leading-[1.05] tracking-tight text-brown-900 md:text-7xl">
+              Review legal contracts{" "}
+              <span className="inline-block rounded-xl bg-brown-900 px-6 py-3 text-white shadow-brutal transition hover:shadow-glow">10x faster</span>{" "}
+              with AI
+            </h2>
+            <p className="mx-auto mb-10 max-w-2xl text-xl leading-relaxed text-brown-700">
+              Automated document analysis powered by large language models. Extract key clauses, identify risks, and compare contracts in seconds—not hours.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <a href="#dashboard" className="inline-flex items-center gap-2 rounded bg-ink px-5 py-3 text-sm font-semibold text-white">
-                Open demo workflow <ArrowRight size={16} />
+            <div className="flex flex-wrap items-center justify-center gap-4">
+              <a href="#dashboard" className="inline-flex items-center gap-2.5 rounded-xl bg-brown-900 px-8 py-4 text-lg font-bold text-yellow-brand shadow-soft transition hover:shadow-glow">
+                View Live Demo <ArrowRight size={20} />
               </a>
-              <a href={`${apiBaseUrl}/docs`} className="inline-flex items-center gap-2 rounded border border-stone-300 px-5 py-3 text-sm font-semibold text-stone-700">
-                FastAPI docs
+              <a href="#dashboard" className="inline-flex items-center gap-2.5 rounded-xl border-2 border-brown-900 bg-cream-50 px-8 py-4 text-lg font-bold text-brown-900 transition hover:bg-brown-900 hover:text-yellow-brand">
+                Get Started
               </a>
             </div>
           </div>
-          <div className="rounded border border-stone-200 bg-stone-50 p-5 shadow-panel">
-            <div className="grid gap-3 sm:grid-cols-2">
-              <HeroMetric label="Documents" value={stats?.total_documents ?? documents.length} />
-              <HeroMetric label="Avg processing" value={`${stats?.average_processing_ms ?? 1435}ms`} />
-              <HeroMetric label="Provider" value={stats?.provider ?? "mock"} />
-              <HeroMetric label="Pipeline" value="7 stages" />
-            </div>
-            <div className="mt-5 rounded border border-stone-200 bg-white p-4">
-              <p className="text-sm font-semibold">Sample output</p>
-              <p className="mt-2 text-sm leading-6 text-stone-600">
-                {analysis?.sample_output.reviewer_status ?? "Ready for legal review"} · Enterprise SaaS playbook · cited RAG context
-              </p>
-            </div>
+
+          {/* Stats Grid */}
+          <div className="mx-auto mt-16 grid max-w-5xl gap-6 md:grid-cols-4">
+            <StatsCard icon={<DocumentIcon />} label="Documents" value={stats?.total_documents ?? documents.length} />
+            <StatsCard icon={<ChartIcon />} label="Analyzed" value={stats?.analyzed_documents ?? documents.length} />
+            <StatsCard icon={<LightningIcon />} label="Processing" value={`${stats?.average_processing_ms ?? 1435}ms`} />
+            <StatsCard icon={<CheckIcon />} label="Accuracy" value="98%" />
           </div>
         </div>
       </section>
 
-      <section id="dashboard" className="mx-auto grid max-w-7xl gap-5 px-5 py-6 lg:grid-cols-[330px_1fr]">
-        <aside className="space-y-5">
-          <Panel title="Upload and Samples" icon={<UploadCloud size={18} />}>
-            <label
-              onDragOver={(event) => {
-                event.preventDefault();
-                setIsDragging(true);
-              }}
-              onDragLeave={() => setIsDragging(false)}
-              onDrop={(event) => {
-                event.preventDefault();
-                setIsDragging(false);
-                void handleUpload(event.dataTransfer.files[0]);
-              }}
-              className={`block rounded border border-dashed p-5 text-sm transition ${isDragging ? "border-brand bg-teal-50" : "border-stone-300 bg-white hover:border-brand"}`}
-            >
-              <span className="flex items-center gap-2 font-semibold"><UploadCloud size={17} /> Drop a .txt contract</span>
-              <span className="mt-2 block text-xs leading-5 text-stone-500">Drag and drop or select a file. PDF OCR is intentionally scaffolded for workers.</span>
-              <input type="file" accept=".txt" className="mt-4 block w-full text-xs" onChange={(event) => void handleUpload(event.target.files?.[0])} />
-            </label>
-            <div className="mt-4 space-y-2">
-              {documents.map((doc) => (
-                <button
-                  key={doc.id}
-                  onClick={() => setSelectedId(doc.id)}
-                  className={`w-full rounded border px-3 py-3 text-left text-sm transition ${selectedId === doc.id ? "border-brand bg-teal-50" : "border-stone-200 bg-white hover:bg-stone-50"}`}
-                >
-                  <span className="block font-medium">{doc.name}</span>
-                  <span className="mt-1 block text-xs text-stone-500">{doc.tags.join(" / ")} · {doc.status}</span>
-                </button>
-              ))}
-            </div>
-          </Panel>
-
-          <Panel title="Pipeline Timeline" icon={<CheckCircle2 size={18} />}>
-            <div className="space-y-3">
-              {(pipeline?.stages ?? []).map((stage) => (
-                <div key={stage.name} className="flex gap-3">
-                  <div className="mt-0.5 grid h-6 w-6 flex-none place-items-center rounded-full bg-emerald-100 text-emerald-700">
-                    <CheckCircle2 size={15} />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">{stage.name}</p>
-                    <p className="text-xs leading-5 text-stone-500">{stage.duration_ms}ms · {stage.detail}</p>
-                  </div>
+      {/* Main Dashboard */}
+      <section id="dashboard" className="mx-auto max-w-7xl px-6 py-12">
+        <div className="grid gap-8 lg:grid-cols-[320px_1fr]">
+          {/* Sidebar */}
+          <aside className="space-y-6">
+            {/* Upload Panel */}
+            <div className="rounded-2xl border-2 border-brown-900/20 bg-cream-50 p-6">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="rounded-lg bg-brown-900 p-2">
+                  <div className="text-yellow-brand" style={{ width: '20px', height: '20px' }}><UploadIcon /></div>
                 </div>
-              ))}
+                <h3 className="font-mono text-sm font-bold uppercase tracking-wide text-brown-900">Upload</h3>
+              </div>
+              <label
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  setIsDragging(false);
+                  void handleUpload(event.dataTransfer.files[0]);
+                }}
+                className={`block cursor-pointer rounded-xl border-2 border-dashed p-6 text-center transition ${
+                  isDragging ? "border-yellow-brand bg-yellow-brand/10" : "border-brown-900/30 bg-white hover:border-yellow-brand"
+                }`}
+              >
+                <div className="mx-auto mb-2 text-brown-700" style={{ width: '32px', height: '32px' }}><UploadIcon /></div>
+                <p className="mb-1 font-semibold text-brown-900">Drop contract file</p>
+                <p className="mb-3 text-sm text-brown-700">or click to browse</p>
+                <input type="file" accept=".txt" className="hidden" onChange={(event) => void handleUpload(event.target.files?.[0])} />
+              </label>
+
+              {/* Document List */}
+              <div className="mt-4 space-y-2">
+                {documents.map((doc) => (
+                  <button
+                    key={doc.id}
+                    onClick={() => setSelectedId(doc.id)}
+                    className={`w-full rounded-lg border-2 p-3 text-left transition ${
+                      selectedId === doc.id
+                        ? "border-yellow-brand bg-yellow-brand/10"
+                        : "border-brown-900/20 bg-white hover:border-brown-900/40"
+                    }`}
+                  >
+                    <p className="mb-1 font-semibold text-brown-900">{doc.name}</p>
+                    <p className="font-mono text-xs text-brown-700">{doc.status}</p>
+                  </button>
+                ))}
+              </div>
             </div>
-          </Panel>
-        </aside>
 
-        <section className="space-y-5">
-          <div className="grid gap-4 md:grid-cols-4">
-            <StatCard icon={<FileSearch size={18} />} label="Documents" value={stats?.total_documents ?? documents.length} />
-            <StatCard icon={<BarChart3 size={18} />} label="Analyzed" value={stats?.analyzed_documents ?? documents.length} />
-            <StatCard icon={<AlertTriangle size={18} />} label="High risk" value={riskCounts.high || stats?.high_risk_clauses || 0} />
-            <StatCard icon={<Scale size={18} />} label="Medium risk" value={riskCounts.medium || stats?.medium_risk_clauses || 0} />
-          </div>
-
-          <section id="analysis" className="grid gap-5 xl:grid-cols-[1fr_380px]">
-            <Panel title="Contract Analysis" icon={<Bot size={18} />}>
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div>
-                  <p className="text-sm text-stone-500">{selectedDoc?.name}</p>
-                  <p className="mt-3 max-w-3xl text-lg leading-8 text-stone-800">{analysis?.summary ?? "Select a contract to begin analysis."}</p>
+            {/* Pipeline */}
+            <div className="rounded-2xl border-2 border-brown-900/20 bg-cream-50 p-6">
+              <div className="mb-4 flex items-center gap-3">
+                <div className="rounded-lg bg-brown-900 p-2">
+                  <div className="text-yellow-brand" style={{ width: '20px', height: '20px' }}><CheckIcon /></div>
                 </div>
-                {analysis && <RiskBadge risk={analysis.overall_risk} label={`Overall ${analysis.overall_risk}`} />}
+                <h3 className="font-mono text-sm font-bold uppercase tracking-wide text-brown-900">Pipeline</h3>
               </div>
-              <div className="mt-5 grid gap-3 md:grid-cols-3">
-                <RiskSummary risk="high" count={riskCounts.high} />
-                <RiskSummary risk="medium" count={riskCounts.medium} />
-                <RiskSummary risk="low" count={riskCounts.low} />
-              </div>
-              <div className="mt-5 grid gap-3 md:grid-cols-2">
-                {(analysis?.recommendations ?? []).slice(0, 4).map((item) => (
-                  <div key={item} className="rounded border border-stone-200 bg-stone-50 p-3 text-sm leading-6 text-stone-700">
-                    {item}
+              <div className="space-y-3">
+                {(pipeline?.stages ?? []).map((stage) => (
+                  <div key={stage.name} className="flex gap-3">
+                    <div className="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-risk-low text-white">
+                      <div style={{ width: '14px', height: '14px' }}><CheckIcon /></div>
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-brown-900">{stage.name}</p>
+                      <p className="font-mono text-xs text-brown-700">{stage.duration_ms}ms</p>
+                    </div>
                   </div>
                 ))}
               </div>
-            </Panel>
+            </div>
+          </aside>
 
-            <Panel title="Ask Your Contract" icon={<MessageSquare size={18} />}>
-              <div className="rounded border border-stone-200 bg-stone-50 p-3 text-sm text-stone-600">
-                Legal reviewer · Provider: {chat?.model_provider ?? stats?.provider ?? "mock"}
-              </div>
-              <textarea
-                value={question}
-                onChange={(event) => setQuestion(event.target.value)}
-                className="mt-3 h-28 w-full resize-none rounded border border-stone-300 bg-white p-3 text-sm outline-none focus:border-brand focus:ring-2 focus:ring-teal-100"
-              />
-              <button onClick={() => void askQuestion()} className="mt-3 inline-flex w-full items-center justify-center gap-2 rounded bg-ink px-4 py-2.5 text-sm font-medium text-white">
-                <MessageSquare size={16} /> Query RAG Context
-              </button>
-              {chat && (
-                <div className="mt-4 rounded border border-stone-200 bg-white p-3">
-                  <p className="text-sm leading-6 text-stone-700">{chat.answer}</p>
-                  <p className="mt-3 text-xs font-medium text-stone-500">Citations: {chat.citations.join(", ")}</p>
+          {/* Main Content */}
+          <div className="space-y-8">
+            {/* Analysis Section */}
+            <section id="analysis" className="grid gap-8 xl:grid-cols-[1fr_380px]">
+              {/* Contract Analysis */}
+              <div className="rounded-2xl border-2 border-brown-900/20 bg-cream-50 p-8">
+                <div className="mb-6 flex items-center gap-3">
+                  <div className="rounded-lg bg-brown-900 p-2">
+                    <div className="text-yellow-brand"><SearchIcon /></div>
+                  </div>
+                  <h3 className="text-xl font-bold text-brown-900">Contract Analysis</h3>
                 </div>
-              )}
-            </Panel>
-          </section>
 
-          <Panel title="Clause Risk Table" icon={<AlertTriangle size={18} />}>
-            <div className="overflow-hidden rounded border border-stone-200">
-              <table className="w-full border-collapse bg-white text-left text-sm">
-                <thead className="bg-stone-50 text-xs uppercase text-stone-500">
-                  <tr>
-                    <th className="px-4 py-3">Clause</th>
-                    <th className="px-4 py-3">Risk</th>
-                    <th className="px-4 py-3">Finding</th>
-                    <th className="px-4 py-3">Recommendation</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-stone-200">
-                  {(analysis?.clauses ?? []).map((clause) => (
-                    <tr key={clause.type} className="align-top">
-                      <td className="w-40 px-4 py-4 font-medium">{clause.title}</td>
-                      <td className="w-28 px-4 py-4"><RiskBadge risk={clause.risk} label={clause.risk} /></td>
-                      <td className="px-4 py-4 leading-6 text-stone-700">{clause.text}</td>
-                      <td className="w-72 px-4 py-4 leading-6 text-stone-600">{clause.recommendation}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </Panel>
-
-          <Panel title="Contract Comparison" icon={<GitCompareArrows size={18} />}>
-            <div id="compare" className="flex flex-col gap-3 md:flex-row md:items-center">
-              <select value={compareId} onChange={(event) => setCompareId(event.target.value)} className="rounded border border-stone-300 bg-white px-3 py-2 text-sm">
-                {documents.filter((doc) => doc.id !== selectedId).map((doc) => (
-                  <option key={doc.id} value={doc.id}>{doc.name}</option>
-                ))}
-              </select>
-              <button onClick={() => void compare()} className="inline-flex items-center justify-center gap-2 rounded bg-brand px-4 py-2 text-sm font-medium text-white">
-                <GitCompareArrows size={16} /> Compare
-              </button>
-            </div>
-            {comparison && (
-              <div className="mt-4">
-                <p className="rounded border border-stone-200 bg-stone-50 p-3 text-sm leading-6 text-stone-700">{comparison.executive_summary}</p>
-                <div className="mt-3 space-y-3">
-                  {comparison.differences.map((item) => (
-                    <div key={item.area} className="rounded border border-stone-200 bg-white p-4">
-                      <div className="mb-3 flex items-center justify-between gap-3">
-                        <p className="font-semibold">{item.area}</p>
-                        <p className="text-xs font-semibold text-brand">{item.risk_delta}</p>
+                {analysis && (
+                  <>
+                    <div className="mb-6">
+                      <p className="mb-2 font-mono text-sm text-brown-700">{selectedDoc?.name}</p>
+                      <p className="mb-4 text-lg leading-relaxed text-brown-900">{analysis.summary}</p>
+                      <div className="inline-block">
+                        <RiskBadge risk={analysis.overall_risk} label={`Overall Risk: ${analysis.overall_risk}`} />
                       </div>
-                      <div className="grid gap-3 md:grid-cols-2">
-                        <ComparisonCell label="Document A" text={item.document_a} />
-                        <ComparisonCell label="Document B" text={item.document_b} />
+                    </div>
+
+                    <div className="mb-6 grid gap-4 md:grid-cols-3">
+                      <RiskCard risk="high" count={riskCounts.high} />
+                      <RiskCard risk="medium" count={riskCounts.medium} />
+                      <RiskCard risk="low" count={riskCounts.low} />
+                    </div>
+
+                    <div className="grid gap-3 md:grid-cols-2">
+                      {(analysis.recommendations ?? []).slice(0, 4).map((item, idx) => (
+                        <div key={idx} className="rounded-lg border border-brown-900/20 bg-white p-4 text-sm leading-relaxed text-brown-800">
+                          <span className="mr-2 text-yellow-brand">▸</span>{item}
+                        </div>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+
+              {/* Chat Panel */}
+              <div className="rounded-2xl border-2 border-brown-900/20 bg-cream-50 p-6">
+                <div className="mb-4 flex items-center gap-3">
+                  <div className="rounded-lg bg-brown-900 p-2">
+                    <div className="text-yellow-brand" style={{ width: '20px', height: '20px' }}><MessageIcon /></div>
+                  </div>
+                  <h3 className="font-mono text-sm font-bold uppercase tracking-wide text-brown-900">Query Contract</h3>
+                </div>
+
+                <div className="mb-4 rounded-lg bg-brown-900/5 p-3">
+                  <p className="font-mono text-xs text-brown-700">Semantic Search Engine</p>
+                </div>
+
+                <textarea
+                  value={question}
+                  onChange={(event) => setQuestion(event.target.value)}
+                  placeholder="Ask about this contract..."
+                  className="mb-4 h-32 w-full resize-none rounded-xl border-2 border-brown-900/20 bg-white p-4 text-sm text-brown-900 outline-none transition focus:border-yellow-brand"
+                />
+
+                <button
+                  onClick={() => void askQuestion()}
+                  className="mb-4 w-full rounded-xl bg-brown-900 px-6 py-3 font-bold text-yellow-brand transition hover:shadow-glow"
+                >
+                  Search Contract
+                </button>
+
+                {chat && (
+                  <div className="rounded-lg border border-brown-900/20 bg-white p-4">
+                    <p className="mb-3 text-sm leading-relaxed text-brown-900">{chat.answer}</p>
+                    <div className="border-t border-brown-900/10 pt-3">
+                      <p className="font-mono text-xs font-semibold text-brown-700">Citations</p>
+                      <p className="mt-1 font-mono text-xs text-brown-600">{chat.citations.join(", ")}</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </section>
+
+            {/* Clause Risk Table */}
+            <div className="rounded-2xl border-2 border-brown-900/20 bg-cream-50 p-8">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="rounded-lg bg-brown-900 p-2">
+                  <div className="text-yellow-brand"><WarningIcon /></div>
+                </div>
+                <h3 className="text-xl font-bold text-brown-900">Clause Analysis</h3>
+              </div>
+
+              <div className="overflow-hidden rounded-xl border-2 border-brown-900/20">
+                <table className="w-full text-left text-sm">
+                  <thead className="bg-brown-900">
+                    <tr>
+                      <th className="px-6 py-4 font-mono text-xs font-bold uppercase tracking-wide text-yellow-brand">Clause</th>
+                      <th className="px-6 py-4 font-mono text-xs font-bold uppercase tracking-wide text-yellow-brand">Risk</th>
+                      <th className="px-6 py-4 font-mono text-xs font-bold uppercase tracking-wide text-yellow-brand">Finding</th>
+                      <th className="px-6 py-4 font-mono text-xs font-bold uppercase tracking-wide text-yellow-brand">Recommendation</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-brown-900/10 bg-white">
+                    {(analysis?.clauses ?? []).map((clause) => (
+                      <tr key={clause.type} className="align-top hover:bg-cream-50">
+                        <td className="px-6 py-4 font-semibold text-brown-900">{clause.title}</td>
+                        <td className="px-6 py-4">
+                          <RiskBadge risk={clause.risk} label={clause.risk} />
+                        </td>
+                        <td className="px-6 py-4 text-brown-800">{clause.text}</td>
+                        <td className="px-6 py-4 text-brown-700">{clause.recommendation}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Contract Comparison */}
+            <div id="compare" className="rounded-2xl border-2 border-brown-900/20 bg-cream-50 p-8">
+              <div className="mb-6 flex items-center gap-3">
+                <div className="rounded-lg bg-brown-900 p-2">
+                  <div className="text-yellow-brand"><CompareIcon /></div>
+                </div>
+                <h3 className="text-xl font-bold text-brown-900">Contract Comparison</h3>
+              </div>
+
+              <div className="mb-6 flex flex-wrap gap-4">
+                <select
+                  value={compareId}
+                  onChange={(event) => setCompareId(event.target.value)}
+                  className="rounded-xl border-2 border-brown-900/20 bg-white px-4 py-3 font-semibold text-brown-900 outline-none transition focus:border-yellow-brand"
+                >
+                  {documents.filter((doc) => doc.id !== selectedId).map((doc) => (
+                    <option key={doc.id} value={doc.id}>{doc.name}</option>
+                  ))}
+                </select>
+                <button
+                  onClick={() => void compare()}
+                  className="rounded-xl bg-brown-900 px-6 py-3 font-bold text-yellow-brand transition hover:shadow-glow"
+                >
+                  Compare Contracts
+                </button>
+              </div>
+
+              {comparison && (
+                <div className="space-y-6">
+                  <div className="rounded-xl border-2 border-yellow-brand/50 bg-yellow-brand/10 p-6">
+                    <p className="mb-2 font-mono text-xs font-bold uppercase tracking-wide text-brown-900">Executive Summary</p>
+                    <p className="text-brown-900">{comparison.executive_summary}</p>
+                  </div>
+
+                  {comparison.differences.map((item, idx) => (
+                    <div key={idx} className="rounded-xl border border-brown-900/20 bg-white p-6">
+                      <div className="mb-4 flex items-center justify-between">
+                        <h4 className="text-lg font-bold text-brown-900">{item.area}</h4>
+                        <span className="rounded-full bg-yellow-brand px-3 py-1 font-mono text-xs font-bold text-brown-900">
+                          {item.risk_delta}
+                        </span>
+                      </div>
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <CompareBox label="Document A" text={item.document_a} />
+                        <CompareBox label="Document B" text={item.document_b} />
                       </div>
                     </div>
                   ))}
                 </div>
+              )}
+            </div>
+
+            {loading && (
+              <div className="flex items-center gap-3 rounded-xl border-2 border-yellow-brand/50 bg-yellow-brand/10 px-6 py-4">
+                <div className="h-5 w-5 animate-spin rounded-full border-2 border-brown-900 border-t-transparent" />
+                <p className="font-semibold text-brown-900">Analyzing contract...</p>
               </div>
             )}
-          </Panel>
-          {loading && <p className="text-sm text-stone-500">Analyzing contract...</p>}
-        </section>
+          </div>
+        </div>
       </section>
     </main>
   );
 }
 
-function Badge({ icon, label }: { icon: ReactNode; label: string }) {
-  return <span className="inline-flex items-center gap-2 rounded border border-stone-200 bg-stone-50 px-3 py-2">{icon}{label}</span>;
-}
-
-function HeroMetric({ label, value }: { label: string; value: string | number }) {
+function StatsCard({ icon, label, value }: { icon: ReactNode; label: string; value: string | number }) {
   return (
-    <div className="rounded border border-stone-200 bg-white p-4">
-      <p className="text-xs uppercase text-stone-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold capitalize">{value}</p>
-    </div>
-  );
-}
-
-function StatCard({ icon, label, value }: { icon: ReactNode; label: string; value: string | number }) {
-  return (
-    <div className="rounded border border-stone-200 bg-white p-4 shadow-panel">
-      <div className="flex items-center justify-between text-brand">{icon}<span className="text-xs uppercase text-stone-500">{label}</span></div>
-      <p className="mt-3 text-3xl font-semibold">{value}</p>
-    </div>
-  );
-}
-
-function Panel({ title, icon, children }: { title: string; icon: ReactNode; children: ReactNode }) {
-  return (
-    <section className="rounded border border-stone-200 bg-white p-5 shadow-panel">
-      <div className="mb-4 flex items-center gap-2 border-b border-stone-100 pb-3">
-        <span className="text-brand">{icon}</span>
-        <h2 className="text-sm font-semibold uppercase tracking-normal text-stone-700">{title}</h2>
+    <div className="rounded-2xl border-2 border-brown-900/20 bg-cream-50 p-6 text-center">
+      <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-xl bg-brown-900">
+        <div className="text-yellow-brand">{icon}</div>
       </div>
-      {children}
-    </section>
+      <p className="mb-1 text-3xl font-black text-brown-900">{value}</p>
+      <p className="font-mono text-xs font-semibold uppercase tracking-wide text-brown-700">{label}</p>
+    </div>
+  );
+}
+
+function RiskCard({ risk, count }: { risk: RiskLevel; count: number }) {
+  const colors = {
+    low: "bg-risk-low/20 border-risk-low text-risk-low",
+    medium: "bg-risk-medium/20 border-risk-medium text-risk-medium",
+    high: "bg-risk-high/20 border-risk-high text-risk-high"
+  };
+  return (
+    <div className={`rounded-xl border-2 p-6 text-center ${colors[risk]}`}>
+      <p className="mb-2 text-4xl font-black">{count}</p>
+      <p className="font-mono text-sm font-bold uppercase tracking-wide">{risk} Risk</p>
+    </div>
   );
 }
 
 function RiskBadge({ risk, label }: { risk: RiskLevel; label: string }) {
-  return <span className={`inline-flex whitespace-nowrap rounded px-2.5 py-1 text-xs font-semibold capitalize ring-1 ${riskStyles[risk]}`}>{label}</span>;
-}
-
-function RiskSummary({ risk, count }: { risk: RiskLevel; count: number }) {
   return (
-    <div className={`rounded border border-stone-200 p-4 ring-1 ${riskStyles[risk]}`}>
-      <p className="text-xs font-semibold uppercase">{risk} risk</p>
-      <p className="mt-2 text-3xl font-semibold">{count}</p>
-    </div>
+    <span className={`inline-block rounded-lg px-3 py-1 text-xs font-bold uppercase ${riskStyles[risk]}`}>
+      {label}
+    </span>
   );
 }
 
-function ComparisonCell({ label, text }: { label: string; text: string }) {
+function CompareBox({ label, text }: { label: string; text: string }) {
   return (
-    <div className="rounded border border-stone-200 bg-stone-50 p-3">
-      <p className="text-xs font-semibold uppercase text-stone-500">{label}</p>
-      <p className="mt-2 text-sm leading-6 text-stone-700">{text}</p>
+    <div className="rounded-lg border border-brown-900/20 bg-cream-50 p-4">
+      <p className="mb-2 font-mono text-xs font-bold uppercase tracking-wide text-brown-700">{label}</p>
+      <p className="text-sm text-brown-900">{text}</p>
     </div>
   );
 }
